@@ -1,0 +1,699 @@
+{
+	"info": {
+		"_postman_id": "b503318e-3a70-4001-9da0-fa52439a5f2e",
+		"name": "Digital Signature Test Collection",
+		"description": "The Salesforce Platform APIs collection contains 250+ requests for the following Salesforce APIs:\n\n<table><tbody><tr><td><div>Async Query<br>Auth<br>Bulk (v1 &amp; v2)<br>Composite<br>Connect<br>CPQ<br>Einstein Prediction Service</div><div contenteditable=\"false\"><div><div><div></div></div></div><div></div></div></td><td><div>GraphQL<br>Metadata<br>Rest<br>Subscription Management<br>Tooling<br>UI</div><div contenteditable=\"false\"><div><div><div></div></div></div><div></div></div></td></tr></tbody></table>\n\n**⚠️ Disclaimers:**\n\n- This collection is provided as-is. It's not officially supported by Salesforce or covered by SLAs.\n- API documentation is not provided with the collection. Please refer to the [official documentation](https://developer.salesforce.com/docs).\n    \n\nℹ️ Report issues and ask questions [here](https://github.com/forcedotcom/postman-salesforce-apis/issues).\n\n## Get started\n\nFollow [this documentation](https://github.com/forcedotcom/postman-salesforce-apis) to get started with the collection.\n\n## Variables Reference\n\nThe collection relies on the following variables:\n\n| Variable | Description |\n| --- | --- |\n| `url` | The base URL for all requests. Either:  <br>\\- `https://test.salesforce.com` for sandboxes or Scratch orgs  <br>\\- `https://login.salesforce.com` for production, Trailhead Playground and Developer Edition orgs  <br>\\- your custom My Domain base URL. |\n| `version` | The Salesforce API version (e.g.: 50.0). |\n| `username` | Your username. |\n| `password` | Your password. |\n| `secretToken` | Your personal [security token](https://help.salesforce.com/articleView?id=user_security_token.htm). |\n| `clientId` | Connected App client Id. |\n| `clientSecret` | Connected App client secret. |\n| `redirectUrl` | Connected App redirect URL for OAuth 2.0. |\n| `initAccessToken` | Initial access token for dynamic Connected App registration. |\n| `site` | Community suffix when connecting with an Experience Cloud user. |\n\nOnly a few of these variables are mandatory. The authentication requests will automatically register and set extra \"private\" variables identified with a `_` prefix (e.g.: `_accessToken`, `_endpoint`, `_orgId`, `_userId`...).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "4034837"
+	},
+	"item": [
+		{
+			"name": "Test_new DS_Signee",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();\r",
+							"\r",
+							"// Define the base path to the nodes\r",
+							"var nodes = jsonData.data.uiapi.query.DS_Signee__c.edges;\r",
+							"\r",
+							"// Loop over each node to perform tests\r",
+							"nodes.forEach(function (item, index) {\r",
+							"  var node = item.node;\r",
+							"\r",
+							"  /************************************* General Validations ************************************/\r",
+							"  pm.test(\"General Validations for Record ID: \" + node.Id, function () {\r",
+							"    // Test for the presence and correctness of the Id\r",
+							"    pm.expect(node.Id).to.not.be.null;\r",
+							"    pm.expect(node.Id).to.be.a(\"string\");\r",
+							"    pm.expect(node.Id.length).to.eql(18);\r",
+							"  });\r",
+							"\r",
+							"  /************************************* Field-Specific Validations ************************************/\r",
+							"  pm.test(\"Field-Specific Validations for Signee Record: \" + node.Id, function () {\r",
+							"    // Email__c validation\r",
+							"    pm.expect(node.Email__c.value).to.not.be.null;\r",
+							"    pm.expect(node.Email__c.value).to.be.a(\"string\");\r",
+							"\r",
+							"    // Signing_Type__c validation\r",
+							"    let signingType = node.Signing_Type__c.value;\r",
+							"    pm.expect(signingType).to.not.be.null;\r",
+							"    pm.expect(signingType).to.be.a(\"string\");\r",
+							"    pm.expect(signingType).to.be.oneOf([\"Ink\", \"Email\"]);\r",
+							"\r",
+							"    // Customer_Type__c validation\r",
+							"    var customerType = node.Customer_Type__c.value;\r",
+							"    pm.expect(customerType).to.not.be.null;\r",
+							"    pm.expect(customerType).to.be.a(\"string\");\r",
+							"    pm.expect(customerType).to.be.oneOf([\r",
+							"      \"PRIVATE\",\r",
+							"      \"BUSINESS\",\r",
+							"      \"AGRICULTURAL\",\r",
+							"    ]);\r",
+							"\r",
+							"    // Status__c validation\r",
+							"    var status = node.Status__c.value;\r",
+							"    pm.expect(status).to.not.be.null;\r",
+							"    pm.expect(status).to.be.a(\"string\");\r",
+							"    pm.expect(status).to.be.oneOf([\r",
+							"      \"New\",\r",
+							"      \"Preparing Email\",\r",
+							"      \"Awaiting Signature\",\r",
+							"      \"Awaiting Seller Acceptance\",\r",
+							"      \"Signed\",\r",
+							"      \"Closed\",\r",
+							"      \"Expired\",\r",
+							"    ]);\r",
+							"\r",
+							"    // URL validations\r",
+							"    var urlPattern = /^(http|https):\\/\\/[^ \"]+$/;\r",
+							"    pm.expect(node.Pre_Sign_Url__c.value).to.match(urlPattern);\r",
+							"    pm.expect(node.Redirect_Url__c.value).to.match(urlPattern);\r",
+							"    pm.expect(node.Sign_Url__c.value).to.match(urlPattern);\r",
+							"  });\r",
+							"\r",
+							"  /************************************* Account__r Validations ************************************/\r",
+							"  pm.test(\"Account__r Validations for Record ID: \" + node.Id, function () {\r",
+							"    var account = node.Account__r;\r",
+							"    pm.expect(account).to.not.be.null;\r",
+							"    pm.expect(account.BusinessBrand__c.value).to.eql(\"ALMBRAND\");\r",
+							"    pm.expect(account.Customer_Type__c.value).to.not.be.null;\r",
+							"    pm.expect(account.Customer_Type__c.value).to.be.a(\"string\");\r",
+							"    pm.expect(account.Customer_number_insurance__c.value).to.not.be.null;\r",
+							"    pm.expect(account.Customer_number_insurance__c.value).to.be.a(\"string\");\r",
+							"  });\r",
+							"\r",
+							"  /************************************* DS_SigningRequest__r Validations ************************************/\r",
+							"  pm.test(\r",
+							"    \"DS_SigningRequest__r Validations for Record ID: \" + node.Id,\r",
+							"    function () {\r",
+							"      var signingRequest = node.DS_SigningRequest__r;\r",
+							"      pm.expect(signingRequest).to.not.be.null;\r",
+							"      pm.expect(signingRequest.Id).to.be.a(\"string\");\r",
+							"      pm.expect(signingRequest.RecordType.DeveloperName.value).to.eql(\r",
+							"        \"Quote_Signing_Request\"\r",
+							"      );\r",
+							"      pm.expect(signingRequest.Days_To_Live__c.value).to.be.a(\"number\");\r",
+							"      pm.expect(signingRequest.Status__c.value).to.be.a(\"string\");\r",
+							"      pm.expect(signingRequest.Number_Of_Signed__c.value).to.be.a(\"number\");\r",
+							"      pm.expect(signingRequest.Number_Of_Signees__c.value).to.be.a(\"number\");\r",
+							"      pm.expect(signingRequest.OwnerId.value).to.be.a(\"string\");\r",
+							"      pm.expect(signingRequest.Request_Id__c.value).to.be.a(\"string\");\r",
+							"      pm.expect(signingRequest.Title__c.value).to.be.a(\"string\");\r",
+							"    }\r",
+							"  );\r",
+							"\r",
+							"  /************************************* ContentDocumentLinks Validations ************************************/\r",
+							"  pm.test(\r",
+							"    \"ContentDocumentLinks Validations for Record ID: \" + node.Id,\r",
+							"    function () {\r",
+							"      pm.expect(node.ContentDocumentLinks.edges).to.not.be.null;\r",
+							"      pm.expect(node.ContentDocumentLinks.edges).to.be.an(\"array\");\r",
+							"      node.ContentDocumentLinks.edges.forEach(function (edge, edgeIndex) {\r",
+							"        var contentDocumentLink = edge.node;\r",
+							"        pm.expect(contentDocumentLink.Id).to.not.be.null;\r",
+							"        pm.expect(contentDocumentLink.Id).to.be.a(\"string\");\r",
+							"        pm.expect(contentDocumentLink.ContentDocument).to.not.be.null;\r",
+							"        pm.expect(contentDocumentLink.ContentDocument).to.be.an(\"object\");\r",
+							"        pm.expect(contentDocumentLink.ContentDocument.Id).to.not.be.null;\r",
+							"        pm.expect(contentDocumentLink.ContentDocument.Id).to.be.a(\"string\");\r",
+							"        pm.expect(\r",
+							"          contentDocumentLink.ContentDocument.Title.value\r",
+							"        ).to.not.be.null;\r",
+							"        pm.expect(contentDocumentLink.ContentDocument.Title.value).to.be.a(\r",
+							"          \"string\"\r",
+							"        );\r",
+							"      });\r",
+							"    }\r",
+							"  );\r",
+							"\r",
+							"  /************************************* Email_Processes__r Validations ************************************/\r",
+							"  pm.test(\r",
+							"    \"Email_Processes__r Validations for Record ID: \" + node.Id,\r",
+							"    function () {\r",
+							"      var emailProcesses = node.Email_Processes__r.edges;\r",
+							"      pm.expect(emailProcesses).to.not.be.null;\r",
+							"      pm.expect(emailProcesses).to.be.an(\"array\");\r",
+							"\r",
+							"      emailProcesses.forEach(function (edge, index) {\r",
+							"        var emailProcess = edge.node;\r",
+							"        pm.expect(emailProcess.Id).to.not.be.null;\r",
+							"        pm.expect(emailProcess.Id).to.be.a(\"string\");\r",
+							"        // Add more validations here as needed\r",
+							"      });\r",
+							"    }\r",
+							"  );\r",
+							"\r",
+							"  /************************************* Additional Validations ************************************/\r",
+							"\r",
+							" /************************************* Verify caseDeveloperName  & signingRequestDeveloperName  ************************************/\r",
+							"\r",
+							"  pm.test(\"Additional Validations for Record ID: \" + node.Id, function () {\r",
+							"    // Case__r DeveloperName Validation\r",
+							"    var caseDeveloperName =\r",
+							"      node.DS_SigningRequest__r.Case__r.RecordType.DeveloperName.value;\r",
+							"    pm.expect(caseDeveloperName).to.eql(\"Digital_Signature_Case\");\r",
+							"    // DS_SigningRequest__r DeveloperName Validation\r",
+							"    var signingRequestDeveloperName =\r",
+							"      node.DS_SigningRequest__r.RecordType.DeveloperName.value;\r",
+							"    pm.expect(signingRequestDeveloperName).to.eql(\"Quote_Signing_Request\");\r",
+							"\r",
+							"\r",
+							" /************************************* Verify dsSigneeCustomerType with accountCustomerType ************************************/\r",
+							"\r",
+							"    // Conditional DS_Signee__c Validation Based on Account__r Customer_Type__c\r",
+							"    var accountCustomerType = node.Account__r.Customer_Type__c.value;\r",
+							"    var dsSigneeCustomerType = node.Customer_Type__c.value;\r",
+							"    if (accountCustomerType === \"Privat\") {\r",
+							"      pm.expect(dsSigneeCustomerType).to.eql(\"PRIVATE\");\r",
+							"    } else if (accountCustomerType === \"Erhverv\") {\r",
+							"      pm.expect(dsSigneeCustomerType).to.eql(\"BUSINESS\");\r",
+							"    } else if (accountCustomerType === \"Landbrug\") {\r",
+							"      pm.expect(dsSigneeCustomerType).to.eql(\"AGRICULTURAL\");\r",
+							"    }\r",
+							"  });\r",
+							"\r",
+							" /******************************* Verify Status for Email_Processes__r  Initial_Sign__c With Status for DS_Signee__c ***********************/\r",
+							"\r",
+							"\r",
+							" /********************************* Verify Status for Email_Processes__r  Receipt__c With Status for DS_Signee__c ***********************/\r",
+							"\r",
+							"\r",
+							" /****************************** Verify Status for DS_SigningRequest__r  Status With Status for DS_Signee__c *****************************/\r",
+							"\r",
+							"\r",
+							" /****************************** Verify Status for Case Status With Status for DS_Signee__c ****************************************/\r",
+							"\r",
+							"  // Close Test Group for the current record\r",
+							"  pm.test(\"End of Tests for Record ID: \" + node.Id, function () {\r",
+							"    pm.expect(true).to.be.true; // This is just to symbolically close the test group\r",
+							"  });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"followOriginalHttpMethod": true,
+				"followAuthorizationHeader": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query getNewDSAfterSwitch {\r\n    uiapi {\r\n        query {\r\n            DS_Signee__c(where: {\r\n                CreatedDate: {\r\n                    gte: { value: \"2024-02-15T00:00:00.000Z\" }\r\n                },\r\n                RecordTypeId: {\r\n                    eq: \"012250000029DvuAAE\"\r\n                }\r\n            },\r\n            orderBy : {CreatedDate : {order : DESC}},\r\n            first: 1) {\r\n                edges {\r\n                    node {\r\n                        Id\r\n                        Email__c {\r\n                            value\r\n                        }\r\n                        Customer_Type__c {\r\n                            value\r\n                        }\r\n                        Signing_Type__c {\r\n                            value\r\n                        }\r\n                        Status__c {\r\n                            value\r\n                        }\r\n                        Pre_Sign_Url__c {\r\n                            value\r\n                        }\r\n                        Redirect_Url__c {\r\n                            value\r\n                        }\r\n                        Sign_Url__c {\r\n                            value\r\n                        }\r\n                        Email_Processes__r{\r\n                            edges{\r\n                                node{\r\n                                    Id\r\n                                    Initial_Sign__c{\r\n                                        value\r\n                                    }\r\n                                    Receipt__c{\r\n                                        value\r\n                                    }\r\n                                }\r\n                            }     \r\n                        }\r\n                        ContentDocumentLinks {\r\n                            edges {\r\n                                node {\r\n                                    Id\r\n                                    ContentDocument {\r\n                                        Id\r\n                                        Title {\r\n                                            value\r\n                                        }\r\n                                    }\r\n                                }\r\n                            }\r\n                        }\r\n                        Account__r {\r\n                            Id\r\n                            BusinessBrand__c {\r\n                                value\r\n                            }\r\n                            Customer_Type__c {\r\n                                value\r\n                            }\r\n                            Customer_number_insurance__c {\r\n                                value\r\n                            }\r\n                        }\r\n                        DS_SigningRequest__r {\r\n                            Id\r\n                            RecordType {\r\n                                DeveloperName {\r\n                                    value\r\n                                }\r\n                            }\r\n                            Days_To_Live__c {\r\n                                value\r\n                            }\r\n                            Status__c {\r\n                                value\r\n                            }\r\n                            Number_Of_Signed__c {\r\n                                value\r\n                            }\r\n                            Number_Of_Signees__c {\r\n                                value\r\n                            }\r\n                            OwnerId {\r\n                                value\r\n                            }\r\n                            Request_Id__c {\r\n                                value\r\n                            }\r\n                            Status__c {\r\n                                value\r\n                            }\r\n                            Title__c {\r\n                                value\r\n                            }\r\n                            Case__r {\r\n                                Id\r\n                                RecordType {\r\n                                    DeveloperName {\r\n                                        value\r\n                                    }\r\n                                }\r\n                                Status {\r\n                                    value\r\n                                }\r\n                            }\r\n                        }\r\n                    }\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "{{_endpoint}}/services/data/v{{version}}/graphql?sObjectName",
+					"host": [
+						"{{_endpoint}}"
+					],
+					"path": [
+						"services",
+						"data",
+						"v{{version}}",
+						"graphql"
+					],
+					"query": [
+						{
+							"key": "sObjectName",
+							"value": null
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test_new DS By Id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();\r",
+							"\r",
+							"// Define the base path to the nodes\r",
+							"var nodes = jsonData.data.uiapi.query.DS_Signee__c.edges;\r",
+							"\r",
+							"// Loop over each node to perform tests\r",
+							"nodes.forEach(function (item, index) {\r",
+							"    var node = item.node;\r",
+							"\r",
+							"    pm.test(\"Record With \" + node.Id + \": ********************* Comprehensive Validation  end For  :\"+node.Id+\" ********************* \", function () {\r",
+							"\r",
+							"    // Test for the presence and correctness of the Id\r",
+							"    pm.test(\"Record With \" +node.Id + \": Id is present and correct\", function () {\r",
+							"        pm.expect(node.Id).to.not.be.null;\r",
+							"        pm.expect(node.Id).to.be.a('string');\r",
+							"        pm.expect(node.Id.length).to.eql(18);\r",
+							"\r",
+							"    });\r",
+							"\r",
+							"    // Test for the Email__c value\r",
+							"    pm.test(\"Record With \" +node.Id +  \": Email__c present and correct\", function () {\r",
+							"        pm.expect(node.Email__c.value).to.not.be.null;\r",
+							"        pm.expect(node.Email__c.value).to.be.a('string');\r",
+							"    });\r",
+							"    \r",
+							"    pm.test(\"Record With \" +node.Id +  \": Signing_Type__c verification\", function () {\r",
+							"    pm.expect(node.Signing_Type__c.value).to.not.be.null;\r",
+							"    pm.expect(node.Signing_Type__c.value).to.be.a('string');\r",
+							"    let signingType = node.Signing_Type__c.value;\r",
+							"    // Use .oneOf for clearer semantics when checking if a value is one of a specific set\r",
+							"    pm.expect(signingType).to.be.oneOf([\"Ink\", \"Email\"], `Signing_Type__c value is expected to be 'Ink' or 'Email', but it was '${signingType}'`);\r",
+							"    })\r",
+							"\r",
+							"    // DS_Signee__c Customer_Type__c validation - updated to ensure customerType is not NULL\r",
+							"    pm.test(\"Record With \" +node.Id +  \": DS_Signee__c Customer_Type__c validation - should not be null and must be one of the specified types\", function () {\r",
+							"        var customerType = node.Customer_Type__c.value; // Accessing the Customer_Type__c value\r",
+							"\r",
+							"        // Ensure customerType is not null and is a string\r",
+							"        pm.expect(customerType).to.not.be.null;\r",
+							"        pm.expect(customerType).to.be.a('string');\r",
+							"\r",
+							"        // Validate that customerType is one of the specified valid types\r",
+							"        pm.expect(customerType).to.be.oneOf([\"PRIVATE\", \"BUSINESS\", \"AGRICULTURAL\"], `Customer_Type__c value is expected to be one of \"PRIVATE\", \"BUSINESS\", \"AGRICULTURAL\", but it was '${customerType}'`);\r",
+							"    });\r",
+							"\r",
+							"    // Test for the Status__c value\r",
+							"    pm.test(\"Record With \" +node.Id +  \": Status__c validation\", function () {\r",
+							"        var status = node.Status__c.value; // Corrected to access Status__c.value\r",
+							"\r",
+							"        // Validate that Status__c is not null, is a string, and is one of the specified valid types\r",
+							"        pm.expect(status).to.not.be.null;\r",
+							"        pm.expect(status).to.be.a('string');\r",
+							"        pm.expect(status).to.be.oneOf([\"New\", \"Preparing Email\", \"Awaiting Signature\", \"Awaiting Seller Acceptance\", \"Signed\", \"Closed\", \"Expired\"], `Status__c value is expected to be one of \"New\", \"Preparing Email\", \"Awaiting Signature\", \"Awaiting Seller Acceptance\", \"Signed\", \"Closed\", \"Expired\", but it was '${status}'`);\r",
+							"    });\r",
+							"\r",
+							"\r",
+							"    var urlPattern = /^(http|https):\\/\\/[^ \"]+$/;\r",
+							"\r",
+							"      // URL Validations\r",
+							"    pm.test(\"Record With \" +node.Id +  \": Pre_Sign_Url__c is a valid URL\", function () {\r",
+							"        pm.expect(node.Pre_Sign_Url__c.value).to.match(urlPattern);\r",
+							"    });\r",
+							"\r",
+							"    pm.test(\"Record With \" +node.Id +  \": Redirect_Url__c is a valid URL\", function () {\r",
+							"        pm.expect(node.Redirect_Url__c.value).to.match(urlPattern);\r",
+							"    });\r",
+							"\r",
+							"    pm.test(\"Record With \" +node.Id +  \": Sign_Url__c is a valid URL\", function () {\r",
+							"        pm.expect(node.Sign_Url__c.value).to.match(urlPattern);\r",
+							"    });  \r",
+							"\r",
+							"\r",
+							"    /*************************************    Account__r    ******************************************* */\r",
+							"\r",
+							"\r",
+							"    // Account__r Validations updated\r",
+							"    var account = node.Account__r; // shorthand for node.Account__r\r",
+							"    pm.test(\"Record With \" +node.Id +  \": Account__r validations\", function () {\r",
+							"    // Validate presence\r",
+							"    pm.expect(account).to.not.be.null;\r",
+							"\r",
+							"    // Validate specific fields for BusinessBrand__c\r",
+							"    pm.expect(account.BusinessBrand__c.value).to.not.be.null;\r",
+							"    pm.expect(account.BusinessBrand__c.value).to.be.a('string');\r",
+							"    pm.expect(account.BusinessBrand__c.value).to.eql(\"ALMBRAND\"); // Can be changed to use CODAN later\r",
+							"    \r",
+							"    // Validate Customer_Type__c\r",
+							"    pm.expect(account.Customer_Type__c.value).to.not.be.null;\r",
+							"    pm.expect(account.Customer_Type__c.value).to.be.a('string');\r",
+							"\r",
+							"    // Validate Customer_number_insurance__c\r",
+							"    pm.expect(account.Customer_number_insurance__c.value).to.not.be.null;\r",
+							"    pm.expect(account.Customer_number_insurance__c.value).to.be.a('string');\r",
+							"    // Optionally, add more specific validation for the format of Customer_number_insurance__c if necessary\r",
+							"    });\r",
+							"\r",
+							"\r",
+							"    /*************************************    DS_SigningRequest__r    ******************************************* */\r",
+							"\r",
+							"    // DS_SigningRequest__r validations\r",
+							"    var signingRequest = node.DS_SigningRequest__r;\r",
+							"    pm.test(\"Record With \" +node.Id +  \": DS_SigningRequest__r validation\", function () {\r",
+							"        // Validate presence\r",
+							"        pm.expect(signingRequest).to.not.be.null;\r",
+							"        // Validate specific fields\r",
+							"        pm.expect(signingRequest.Id).to.be.a('string');\r",
+							"        pm.expect(signingRequest.RecordType.DeveloperName.value).to.eql(\"Quote_Signing_Request\");\r",
+							"        pm.expect(signingRequest.Days_To_Live__c.value).to.be.a('number').and.to.not.be.null;\r",
+							"        pm.expect(signingRequest.Status__c.value).to.be.a('string').and.to.not.be.null;\r",
+							"        pm.expect(signingRequest.Number_Of_Signed__c.value).to.be.a('number').and.to.not.be.null;\r",
+							"        pm.expect(signingRequest.Number_Of_Signees__c.value).to.be.a('number').and.to.not.be.null;\r",
+							"        pm.expect(signingRequest.OwnerId.value).to.be.a('string').and.to.not.be.null;\r",
+							"        pm.expect(signingRequest.Request_Id__c.value).to.be.a('string').and.to.not.be.null;\r",
+							"        pm.expect(signingRequest.Title__c.value).to.be.a('string').and.to.not.be.null;\r",
+							"\r",
+							"    });\r",
+							"\r",
+							"    /*************************************    ContentDocumentLinks    ******************************************* */\r",
+							"    // Test for ContentDocumentLinks\r",
+							"\r",
+							"\r",
+							"        // Test for the presence of ContentDocumentLinks and its size\r",
+							"        pm.test(\"Record With \" +node.Id +  \": ContentDocumentLinks is present and has correct size\", function () {\r",
+							"            pm.expect(node.ContentDocumentLinks.edges).to.not.be.null;\r",
+							"            pm.expect(node.ContentDocumentLinks.edges).to.be.an('array');\r",
+							"            \r",
+							"            // Add a check for the size of the array if a specific size is expected.\r",
+							"            pm.expect(node.ContentDocumentLinks.edges.length).to.be.at.least(1, \"Expected at least 1 ContentDocumentLinks\");\r",
+							"        });\r",
+							"\r",
+							"        // Assuming there's at least one ContentDocumentLink based on the size check above,\r",
+							"        // proceed to validate each ContentDocumentLink and its properties\r",
+							"        node.ContentDocumentLinks.edges.forEach(function (edge, edgeIndex) {\r",
+							"            var contentDocumentLink = edge.node;\r",
+							"\r",
+							"            // Test for the presence and correctness of the ContentDocumentLink Id\r",
+							"            pm.test(\"Record With \" +node.Id +  \" ContentDocumentLink \" + (edgeIndex + 1) + \": Id is present and correct\", function () {\r",
+							"                pm.expect(contentDocumentLink.Id).to.not.be.null;\r",
+							"                pm.expect(contentDocumentLink.Id).to.be.a('string');\r",
+							"            });\r",
+							"\r",
+							"            // Test for the presence and structure of the ContentDocument\r",
+							"            pm.test(\"Record With \" +node.Id +  \" ContentDocumentLink \" + (edgeIndex + 1) + \": ContentDocument is present\", function () {\r",
+							"                pm.expect(contentDocumentLink.ContentDocument).to.not.be.null;\r",
+							"                pm.expect(contentDocumentLink.ContentDocument).to.be.an('object');\r",
+							"            });\r",
+							"\r",
+							"            // Test for the presence and correctness of the ContentDocument Id\r",
+							"            pm.test(\"Record With \" +node.Id +  \" ContentDocumentLink \" + (edgeIndex + 1) + \": ContentDocument Id is present and correct\", function () {\r",
+							"                pm.expect(contentDocumentLink.ContentDocument.Id).to.not.be.null;\r",
+							"                pm.expect(contentDocumentLink.ContentDocument.Id).to.be.a('string');\r",
+							"            });\r",
+							"\r",
+							"            // Test for the presence and correctness of the ContentDocument Title\r",
+							"            pm.test(\"Record With \" +node.Id +  \" ContentDocumentLink \" + (edgeIndex + 1) + \": ContentDocument Title is present and correct\", function () {\r",
+							"                pm.expect(contentDocumentLink.ContentDocument.Title.value).to.not.be.null;\r",
+							"                pm.expect(contentDocumentLink.ContentDocument.Title.value).to.be.a('string');\r",
+							"            });\r",
+							"\r",
+							"\r",
+							"    });\r",
+							"\r",
+							" });\r",
+							"\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"followOriginalHttpMethod": true,
+				"followAuthorizationHeader": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query getNewDSAfterSwitch {\r\n    uiapi {\r\n        query {\r\n            DS_Signee__c(where: {\r\n                CreatedDate: {\r\n                    gte: { value: \"2024-02-15T00:00:00.000Z\" }\r\n                },\r\n                RecordTypeId: {\r\n                    eq: \"012250000029DvuAAE\"\r\n                },\r\n                Id:{\r\n                    eq: \"a4t25000000ts0qAAA\"\r\n                }\r\n            }, first: 1) {\r\n                edges {\r\n                    node {\r\n                        Id\r\n                        Email__c {\r\n                            value\r\n                        }\r\n                        Customer_Type__c {\r\n                            value\r\n                        }\r\n                        Signing_Type__c {\r\n                            value\r\n                        }\r\n                        Status__c {\r\n                            value\r\n                        }\r\n                        Pre_Sign_Url__c {\r\n                            value\r\n                        }\r\n                        Redirect_Url__c {\r\n                            value\r\n                        }\r\n                        Sign_Url__c {\r\n                            value\r\n                        }\r\n                        Email_Processes__r{\r\n                            edges{\r\n                                node{\r\n                                    Id\r\n                                    Initial_Sign__c{\r\n                                        value\r\n                                    }\r\n                                    Receipt__c{\r\n                                        value\r\n                                    }\r\n                                }\r\n                            }\r\n                                \r\n                        }\r\n                        ContentDocumentLinks {\r\n                            edges {\r\n                                node {\r\n                                    Id\r\n                                    ContentDocument {\r\n                                        Id\r\n                                        Title {\r\n                                            value\r\n                                        }\r\n                                    }\r\n                                }\r\n                            }\r\n                        }\r\n                        Account__r {\r\n                            Id\r\n                            BusinessBrand__c {\r\n                                value\r\n                            }\r\n                            Customer_Type__c {\r\n                                value\r\n                            }\r\n                            Customer_number_insurance__c {\r\n                                value\r\n                            }\r\n                        }\r\n                        DS_SigningRequest__r {\r\n                            Id\r\n                            RecordType {\r\n                                DeveloperName {\r\n                                    value\r\n                                }\r\n                            }\r\n                            Days_To_Live__c {\r\n                                value\r\n                            }\r\n                            Status__c {\r\n                                value\r\n                            }\r\n                            Number_Of_Signed__c {\r\n                                value\r\n                            }\r\n                            Number_Of_Signees__c {\r\n                                value\r\n                            }\r\n                            OwnerId {\r\n                                value\r\n                            }\r\n                            Request_Id__c {\r\n                                value\r\n                            }\r\n                            Status__c {\r\n                                value\r\n                            }\r\n                            Title__c {\r\n                                value\r\n                            }\r\n                            Case__r {\r\n                                Id\r\n                                RecordType {\r\n                                    DeveloperName {\r\n                                        value\r\n                                    }\r\n                                }\r\n                                Status {\r\n                                    value\r\n                                }\r\n                            }\r\n                        }\r\n                    }\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "{{_endpoint}}/services/data/v{{version}}/graphql",
+					"host": [
+						"{{_endpoint}}"
+					],
+					"path": [
+						"services",
+						"data",
+						"v{{version}}",
+						"graphql"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "OLD DS",
+			"protocolProfileBehavior": {
+				"followOriginalHttpMethod": true,
+				"followAuthorizationHeader": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query getOldDS {\r\n    uiapi {\r\n        query {\r\n            Case(where: {\r\n                CreatedDate: {\r\n                    gte: { value: \"2024-03-15T00:00:00.000Z\" }\r\n                },\r\n                RecordTypeId: {\r\n                    eq: \"01258000000ctGbAAI\"\r\n                }\r\n            },\r\n            orderBy : {CreatedDate : {order : DESC}},\r\n            first: 1) {\r\n                edges {\r\n                    node {\r\n                        Id\r\n                        Email__c {\r\n                            value\r\n                        }\r\n                        Customer_Type__c {\r\n                            value\r\n                        }\r\n                        Type{\r\n                            value\r\n                        }\r\n                        Brand__c {\r\n                            value\r\n                        }\r\n                        Pre_Sign_URL__c {\r\n                            value\r\n                        }\r\n                        Redirect_url__c {\r\n                            value\r\n                        }\r\n                        Signicat_url__c {\r\n                            value\r\n                        }\r\n                        ParentId{\r\n                            value\r\n                        }\r\n                        Parent {\r\n                            Id\r\n                            Subject{\r\n                                value\r\n                            }\r\n                            Number_of_DS_Signatures__c{\r\n                                value\r\n                            }\r\n                            Number_of_DS_Signees__c{\r\n                                value\r\n                            }\r\n                            Status{\r\n                                value\r\n                            }\r\n                            Days_to_live__c{\r\n                                value\r\n                            }\r\n\r\n                        }\r\n                        EmailProcesses__r{\r\n                            edges{\r\n                                node{\r\n                                    Id\r\n                                    Initial_Sign__c{\r\n                                        value\r\n                                    }\r\n                                    Receipt__c{\r\n                                        value\r\n                                    }\r\n                                    First_Reminder__c{\r\n                                        value\r\n                                    }\r\n                                    Last_Reminder__c{\r\n                                        value\r\n                                    }\r\n                                    TouchDate__c{\r\n                                        value\r\n                                    }\r\n                                    Updated_Date__c{\r\n                                        value\r\n                                    }\r\n                                    error_text__c{\r\n                                        value\r\n                                    }\r\n                                }\r\n                            }\r\n                        }\r\n                        Tasks{\r\n                            edges{\r\n                                node{\r\n                                    Id\r\n                                    Subject{\r\n                                        value\r\n                                    }                                 \r\n                                }\r\n                                \r\n                            }\r\n                        }                      \r\n                        ContentDocumentLinks {\r\n                            edges {\r\n                                node {\r\n                                    Id\r\n                                    LinkedEntityId{\r\n                                        value\r\n                                    }\r\n                                    ShareType{\r\n                                        value\r\n                                    }\r\n                                    Visibility{\r\n                                        value\r\n                                    }\r\n                                    ContentDocumentId{\r\n                                            value\r\n                                    }\r\n                                    ContentDocument {\r\n                                        Id\r\n                                        Title {\r\n                                            value\r\n                                        }\r\n                                        LatestPublishedVersionId{\r\n                                            value\r\n                                        }                                    \r\n                                    }\r\n                                }\r\n                            }\r\n                        }                        \r\n                        Account{\r\n                            Id\r\n                            Customer_number_insurance__c{\r\n                                value\r\n                            }\r\n                            Customer_Type__c{\r\n                                value\r\n                            }\r\n                        }\r\n                    }\r\n                }\r\n            }\r\n        }                                    \r\n    }\r\n}\r\n",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "{{_endpoint}}/services/data/v{{version}}/graphql",
+					"host": [
+						"{{_endpoint}}"
+					],
+					"path": [
+						"services",
+						"data",
+						"v{{version}}",
+						"graphql"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "IntrospectionBy SobjectName",
+			"protocolProfileBehavior": {
+				"followOriginalHttpMethod": true,
+				"followAuthorizationHeader": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query GetSObjectFields($sObjectName: String!) {\r\n  __type(name: $sObjectName) {\r\n    fields {\r\n      name\r\n      type {\r\n        name\r\n      }\r\n    }\r\n  }\r\n}\r\n",
+						"variables": "{\r\n  \"sObjectName\": \"DS_Signee__c\"\r\n}"
+					}
+				},
+				"url": {
+					"raw": "{{_endpoint}}/services/data/v{{version}}/graphql",
+					"host": [
+						"{{_endpoint}}"
+					],
+					"path": [
+						"services",
+						"data",
+						"v{{version}}",
+						"graphql"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test_New DS_Signing_Request",
+			"protocolProfileBehavior": {
+				"followOriginalHttpMethod": true,
+				"followAuthorizationHeader": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query getNewDSAfterSwitch {\r\n    uiapi {\r\n        query {\r\n            DS_SigningRequest__c(where: {\r\n                CreatedDate: {\r\n                    gte: { value: \"2024-02-15T00:00:00.000Z\" }\r\n                },\r\n                RecordTypeId: {\r\n                    eq: \"012250000029DvvAAE\"\r\n                }\r\n            },\r\n            orderBy : {CreatedDate : {order : DESC}},\r\n            first: 1) {\r\n                edges {\r\n                    node {\r\n                        Id\r\n                        Days_To_Live__c{\r\n                            value\r\n                        }\r\n                        Number_Of_Signed__c{\r\n                            value\r\n                        }\r\n                        Number_Of_Signees__c{\r\n                            value\r\n                        }\r\n                        OwnerId{\r\n                            value\r\n                        }\r\n                        Quote__c{\r\n                            value\r\n                        }\r\n                        Quote_Id__c{\r\n                            value\r\n                        }\r\n                        Reminder_Start_Date__c{\r\n                            value\r\n                        }\r\n                        Request_Id__c{\r\n                            value\r\n                        }\r\n                        Name{\r\n                            value\r\n                        }\r\n                        RecordType{\r\n                            Id\r\n                        }\r\n                        Status__c{\r\n                            value\r\n                        }\r\n                        Title__c{\r\n                            value\r\n                        }\r\n                        Case__r{\r\n                            Id\r\n                            \r\n                        }\r\n                        \r\n                        Quote__r{\r\n                            Id\r\n                        }\r\n                        \r\n                        DS_Signees__r {\r\n                            edges{\r\n                                node{\r\n                                    Id\r\n                                    Status__c{\r\n                                        value\r\n                                    }\r\n                                    Customer_Type__c{\r\n                                        value\r\n                                    }\r\n                                    Signing_Type__c{\r\n                                        value\r\n                                    }\r\n                                    Email__c{\r\n                                        value\r\n                                    }\r\n                                    Name{\r\n                                        value\r\n                                    }\r\n                                    Pre_Sign_Url__c{\r\n                                        value\r\n                                    }\r\n                                    Redirect_Url__c{\r\n                                        value\r\n                                    }\r\n                                    Sign_Url__c{\r\n                                        value\r\n                                    }\r\n                                    RecordType{\r\n                                        DeveloperName{\r\n                                            value\r\n                                        }\r\n                                    }\r\n                                    Account__r{\r\n                                        Id\r\n                                        Customer_Type__c{\r\n                                            value\r\n                                        }\r\n                                    }\r\n                                    Email_Processes__r {\r\n                                        edges{\r\n                                            node{\r\n                                                Id\r\n                                            }\r\n                                        }\r\n                                    }\r\n    \r\n                                }\r\n                            }\r\n                        }\r\n                    }        \r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "{{_endpoint}}/services/data/v{{version}}/graphql",
+					"host": [
+						"{{_endpoint}}"
+					],
+					"path": [
+						"services",
+						"data",
+						"v{{version}}",
+						"graphql"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "oauth2",
+		"oauth2": [
+			{
+				"key": "tokenName",
+				"value": "access_token",
+				"type": "string"
+			},
+			{
+				"key": "challengeAlgorithm",
+				"value": "S256",
+				"type": "string"
+			},
+			{
+				"key": "username",
+				"value": "{{username}}",
+				"type": "string"
+			},
+			{
+				"key": "useBrowser",
+				"value": true,
+				"type": "boolean"
+			},
+			{
+				"key": "scope",
+				"value": "api",
+				"type": "string"
+			},
+			{
+				"key": "password",
+				"value": "{{password}}",
+				"type": "string"
+			},
+			{
+				"key": "grant_type",
+				"value": "implicit",
+				"type": "string"
+			},
+			{
+				"key": "clientSecret",
+				"value": "{{clientSecret}}",
+				"type": "string"
+			},
+			{
+				"key": "clientId",
+				"value": "{{clientId}}",
+				"type": "string"
+			},
+			{
+				"key": "authUrl",
+				"value": "{{url}}{{site}}/services/oauth2/authorize",
+				"type": "string"
+			},
+			{
+				"key": "addTokenTo",
+				"value": "header",
+				"type": "string"
+			},
+			{
+				"key": "client_authentication",
+				"value": "body",
+				"type": "string"
+			},
+			{
+				"key": "accessTokenUrl",
+				"value": "{{url}}{{site}}/services/oauth2/token",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Specifying Postman as the client for Salesforce logs ",
+					"pm.request.headers.add({key: 'Sforce-Call-Options', value: 'client=postman' });",
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "url",
+			"value": "https://almbrand--test.sandbox.lightning.force.com/"
+		},
+		{
+			"key": "version",
+			"value": "58.0"
+		},
+		{
+			"key": "username",
+			"value": ""
+		},
+		{
+			"key": "password",
+			"value": ""
+		},
+		{
+			"key": "secretToken",
+			"value": ""
+		},
+		{
+			"key": "clientId",
+			"value": "3MVG98_Psg5cppyYCmk1gZNC25o00SXpgpodlS29IZ6pXiHkt3xuPa5qIjBTtEgdsiMuIWVN_8F0jnwEtbDh4"
+		},
+		{
+			"key": "clientSecret",
+			"value": ""
+		},
+		{
+			"key": "redirectUrl",
+			"value": ""
+		},
+		{
+			"key": "initAccessToken",
+			"value": ""
+		},
+		{
+			"key": "site",
+			"value": ""
+		},
+		{
+			"key": "_accessToken",
+			"value": ""
+		},
+		{
+			"key": "_endpoint",
+			"value": "https://almbrand--test.sandbox.lightning.force.com/"
+		},
+		{
+			"key": "_userId",
+			"value": ""
+		},
+		{
+			"key": "_orgId",
+			"value": ""
+		},
+		{
+			"key": "_jobId",
+			"value": ""
+		},
+		{
+			"key": "webstoreId",
+			"value": ""
+		},
+		{
+			"key": "_deviceCode",
+			"value": ""
+		}
+	]
+}
